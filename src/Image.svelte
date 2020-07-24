@@ -1,91 +1,62 @@
 <script>
-  import Waypoint from "svelte-waypoint";
+  // import Waypoint from 'svelte-waypoint'
+  import LazyNoscript from './LazyNoscript.svelte'
+  import Picture from './Picture.svelte'
+  import Wrapper from './Wrapper.svelte'
 
-  export let c = ""; // deprecated
-  export let alt = "";
-  export let width = null;
-  export let height = null;
-  export let src = "";
-  export let srcset = "";
-  export let srcsetWebp = "";
-  export let ratio = "100%";
-  export let blur = false;
-  export let sizes = "(max-width: 1000px) 100vw, 1000px";
-  export let threshold = 1.0;
-  export let lazy = true;
-  export let wrapperClass = "";
-  export let placeholderClass = "";
+  export let lazy = true
 
-  let className = "";
-  export { className as class };
+  // export let ratio = '100%'
+  // export let blur = false
+  // export let sizes = '(max-width: 1000px) 100vw, 1000px'
+  // export let threshold = 1.0
+  // export let wrapperClass = ''
+  // export let placeholderClass = ''
+  // export let placeholder = true
 
-  let loaded = !lazy;
+  // let className = ''
+  // export { className as class }
 
+  // const sizeString = sizes.map()
+
+  let loaded = !lazy
   function load(img) {
-    img.onload = () => (loaded = true);
+    img.onload = () => (loaded = true)
   }
 </script>
 
-<style>
-  img {
-    object-position: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    will-change: opacity;
-  }
+<Wrapper {...$$restProps} {loaded}>
+  <LazyNoscript {lazy}>
+    <Picture {...$$restProps} {load} {loaded} />
+  </LazyNoscript>
+</Wrapper>
 
-  .blur {
-    filter: blur(10px);
-    transition: opacity 0.4s ease, filter 0.5s ease;
-  }
-
-  .placeholder {
-    opacity: 1;
-    transition: opacity 0.5s ease;
-    transition-delay: 0.7s;
-  }
-
-  .main {
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    transition-delay: 0.7s;
-  }
-
-  .loaded .placeholder {
-    opacity: 0;
-  }
-
-  .loaded .main {
-    opacity: 1;
-  }
-</style>
-
-<Waypoint
-  class="{wrapperClass}"
+<!-- <Waypoint
+  class={wrapperClass}
   style="min-height: 100px; width: 100%;"
   once
   {threshold}
-  disabled="{!lazy}"
->
-  <div class:loaded style="position: relative; width: 100%;">
-    <div style="position: relative; overflow: hidden;">
-      <div style="width:100%;padding-bottom:{ratio};"></div>
-      <img class="placeholder {placeholderClass}" {src} {alt} />
-      <picture>
-        <source type="image/webp" srcset="{srcsetWebp}" {sizes} />
-        <source {srcset} {sizes} />
-        <img
-          {src}
-          use:load
-          class="main {c} {className}"
-          class:blur
-          {alt}
-          {width}
-          {height}
-        />
-      </picture>
-    </div>
-  </div>
-</Waypoint>
+  disabled={!lazy}> -->
+<!-- <div class:loaded style="position: relative; width: 100%;">
+  <div style="position: relative; overflow: hidden;"> -->
+<!-- <div style="width:100%;padding-bottom:{ratio};" /> -->
+<!-- {#if placeholder}
+      <img class="placeholder {placeholderClass}" {placeholderSrc} {alt} />
+    {/if}
+
+    <Picture {...$$restProps} {blur} {height} {lazy} {loaded} {width} /> -->
+<!-- <picture>
+      <source type="image/webp" srcset={srcsetWebp} {sizes} />
+      <source {srcset} {sizes} />
+      <img
+        {src}
+        use:load
+        class="main {className}"
+        class:blur
+        {alt}
+        {width}
+        {height} />
+    </picture> -->
+<!-- </div>
+</div> -->
+<!-- </Waypoint> -->

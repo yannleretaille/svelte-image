@@ -1,26 +1,19 @@
 <script>
   export let alt = ''
-  export let blur = false
-  export let height = null
-  export let image
+  export let height
   export let load
-  export let loaded = false
+  export let loaded
   export let placeholder = true
-  export let sizes = ''
+  export let sizes
   export let srcset = ''
   export let srcsetWebp = ''
-  export let width = null
+  export let width
 
-  let className = ''
+  let className
   export { className as class }
 </script>
 
 <style>
-  .blur {
-    filter: blur(10px);
-    transition: opacity 0.4s ease, filter 0.5s ease;
-  }
-
   .placeholder {
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -40,9 +33,7 @@
   <source {sizes} {srcset} />
   <img
     {alt}
-    bind:this={image}
-    class="image {className}"
-    class:blur
+    class={className}
     class:loaded
     class:placeholder
     {height}

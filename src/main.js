@@ -32,7 +32,7 @@ let options = {
 
   // array of screen size breakpoints at which sizes above will be applied.
   // first size does not use breakpoint
-  breakpoints: [768, 1024],
+  breakpoints: [375, 768, 1024],
 
   outputDir: 'g/',
 
@@ -132,7 +132,7 @@ async function getBase64(pathname, inlined = false) {
   return 'data:image/png;base64,' + s.toString('base64')
 }
 
-const optimizeSVG = (svg) => {
+const optimizeSVG = async (svg) => {
   const svgo = require(`svgo`)
   const res = new svgo({
     multipass: true,
@@ -140,7 +140,8 @@ const optimizeSVG = (svg) => {
     datauri: 'base64'
   })
 
-  return res.optimize(svg).then(({ data }) => data)
+  const { data } = await res.optimize(svg)
+  return data
 }
 
 async function getTrace(pathname) {
@@ -163,31 +164,49 @@ function getProp(node, attr) {
 
 function getPropData(node, attr) {
   const [value] = getProp(node, attr) || [{}]
-  return value.data
+  const { data, expression, type } = value || {}
+
+  // AttributeShorthand??
+  if (type === 'MustacheTag') {
+    const { elements, value: expressionValue } = expression
+
+    if (elements) {
+      return elements.map((element) => element.value)
+    }
+
+    return expressionValue
+  }
+
+  return data
 }
 
-function getPropOrOption(node, attr) {
+function getPropDataOrOption(node, attr) {
   const value = getPropData(node, attr)
   if (value !== undefined) return value
   return options[attr]
 }
 
-function getPlaceholder(node) {
-  return getPropOrOption(node, 'placeholder')
+function getBreakpointsOption(node) {
+  return getPropDataOrOption(node, 'breakpoints')
 }
 
-function getRatio(node) {
+function getPlaceholderOption(node) {
+  return getPropDataOrOption(node, 'placeholder')
+}
+
+function getRatioOption(node) {
   const width = getPropData(node, 'width')
   if (width !== undefined) return false
-  return getPropOrOption(node, 'ratio')
+  return getPropDataOrOption(node, 'ratio')
 }
 
-function getSizes(node) {
+function getSizesOption(node) {
   const width = getPropData(node, 'width')
-  if (!['', undefined].includes(width)) {
+  if (width !== undefined) {
     return [parseInt(width, 10)]
   }
-  return getPropOrOption(node, 'sizes')
+  const option = getPropDataOrOption(node, 'sizes')
+  return Array.isArray(option) ? option : JSON.parse(option)
 }
 
 function getSrc(node) {
@@ -332,7 +351,7 @@ function insert(content, value, start, end, offset) {
   }
 }
 
-async function createSizes(paths, sizes) {
+async function createSizesMap(paths, sizes) {
   const smallestSize = Math.min(...sizes)
   const meta = await sharp(paths.inPath).metadata()
   const imageSizes = smallestSize > meta.width ? [meta.width] : sizes
@@ -413,19 +432,44 @@ const srcsetLine = (s) =>
   `${s.filename.replace(pathSepPattern, '/')} ${s.size}w`
 
 const srcsetLineWebp = (s) =>
-  `${s.filename.replace(pathSepPattern, '/')} ${s.size}w`
+  srcsetLine(s)
     .replace('jpg', 'webp')
     .replace('png', 'webp')
     .replace('jpeg', 'webp')
 
-function getSrcset(sizes, lineFn = srcsetLine, tag = 'srcset') {
+function createRatio(sizes) {
+  return `${(1 / (sizes[0].width / sizes[0].height)) * 100}%`
+}
+
+function createSizes(sizes, breakpoints) {
+  return (
+    sizes
+      // filter out retina sizes when calculating sizes attribute
+      .reduce((result, size, index) => {
+        if (options.retina && index % 2 === 1) return result
+        result.push(size)
+        return result
+      }, [])
+      // create size w/ breakpoint
+      .reduce((result, data, index) => {
+        const query = [`${data.size}px`]
+        if (index > 0) query.unshift(`(min-width: ${breakpoints[index]}px)`)
+        result.push(query.join(' '))
+        return result
+      }, [])
+      .reverse()
+      .join(', ')
+  )
+}
+
+function createSrcset(sizes, lineFn = srcsetLine, tag = 'srcset') {
   const imageSizes = Array.isArray(sizes) ? sizes : [sizes]
   const srcSetValue = imageSizes
     .filter((f) => f)
     .map(lineFn)
     .join()
 
-  return ` ${tag}=\'${srcSetValue}\' `
+  return ` ${tag}=\"${srcSetValue}\" `
 }
 
 async function replaceInComponent(edited, node) {
@@ -440,9 +484,9 @@ async function replaceInComponent(edited, node) {
     return { content, offset }
   }
 
-  const sizes = await createSizes(paths, getSizes(node))
+  const sizes = await createSizesMap(paths, getSizesOption(node))
 
-  const placeholder = getPlaceholder(node)
+  const placeholder = getPlaceholderOption(node)
   const base64 =
     placeholder &&
     (placeholder === 'blur'
@@ -450,39 +494,91 @@ async function replaceInComponent(edited, node) {
       : await getTrace(paths.inPath))
 
   const [{ start, end }] = getSrc(node)
+  const withBase64 = replaceProp({
+    content,
+    end,
+    offset,
+    start,
+    value: base64 || ''
+  })
 
-  const withBase64 = base64 && insert(content, base64, start, end, offset)
+  // add/modify sizes w/ breakpoints and pixel sizes
+  const withSizes = replaceOrAddProp({
+    base: edited,
+    node,
+    previous: withBase64,
+    prop: 'sizes',
+    value: createSizes(sizes, getBreakpointsOption(node))
+  })
 
-  const withSrcset = base64
-    ? insert(
-        withBase64.content,
-        getSrcset(sizes),
-        end + 1,
-        end + 2,
-        withBase64.offset
-      )
-    : insert(content, getSrcset(sizes), start, end, offset)
+  // assumes srcset is never passed, may need to target for replacement
+  const withSrcset = addProp({
+    ...withSizes,
+    value: createSrcset(sizes)
+  })
 
-  const ratio = getRatio(node)
-  const withRatio = ratio
-    ? insert(
-        withSrcset.content,
-        ` ratio=\'${(1 / (sizes[0].width / sizes[0].height)) * 100}%\' `,
-        end + 1,
-        end + 2,
-        withSrcset.offset
-      )
+  // if we want to add ratio
+  const withRatio = ['', true].includes(getRatioOption(node))
+    ? replaceOrAddProp({
+        base: edited,
+        node,
+        previous: withSrcset,
+        prop: 'ratio',
+        value: createRatio(sizes)
+      })
     : withSrcset
 
   if (!options.webp) return withRatio
 
-  return insert(
-    withRatio.content,
-    getSrcset(sizes, srcsetLineWebp, 'srcsetWebp'),
-    end + 1,
-    end + 2,
-    withRatio.offset
-  )
+  const withWebp = addProp({
+    ...withRatio,
+    value: createSrcset(sizes, srcsetLineWebp, 'srcsetWebp')
+  })
+
+  return withWebp
+}
+
+function replaceOrAddProp({ base, node, previous, prop, value }) {
+  const { content } = previous
+  const propData = getProp(node, prop)
+  const replace = !!propData
+
+  // get end, offset, and start for replacing prop inline
+  const { end, offset, start } = (() => {
+    if (!replace) return {}
+    const [{ end, start }] = propData
+    const contentDiff = content.length - base.content.length
+    const diff = start > previous.start ? contentDiff : 0
+
+    return {
+      end: end + diff,
+      offset: base.offset,
+      start: start + diff
+    }
+  })()
+
+  return replace
+    ? replaceProp({
+        content,
+        end,
+        node,
+        offset,
+        prop,
+        start,
+        value: `\"${value}\"`
+      })
+    : addProp({
+        ...previous,
+        value: ` ${prop}=\"${value}\" `
+      })
+}
+
+function replaceProp({ content, end, offset, start, value }) {
+  return { ...insert(content, value, start, end, offset), end, start }
+}
+
+function addProp({ content, end, offset, start, value }) {
+  return { ...insert(content, value, end + 1, end + 2, offset), end, start }
 }
 
 async function optimize(paths) {
@@ -541,8 +637,6 @@ async function replaceImages(content) {
       }
 
       if (options.optimizeAll && node.name === 'img') {
-        // const [value] = getSrc(node)
-        // if (!value) return
         imageNodes.push(node)
         return
       }

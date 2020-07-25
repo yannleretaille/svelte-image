@@ -11,8 +11,12 @@
 </script>
 
 <style>
-  .ratio :global(img),
-  .wrapper img {
+  .wrapper {
+    position: relative;
+  }
+
+  .placeholder,
+  .ratio :global(img) {
     object-fit: cover;
     position: absolute;
     top: 0;
@@ -20,10 +24,6 @@
     width: 100%;
     height: 100%;
     will-change: opacity;
-  }
-
-  .wrapper {
-    position: relative;
   }
 
   .placeholder {

@@ -36,27 +36,5 @@
   style="min-height: 100px; width: 100%;"
   once
   {threshold}
-  disabled={!lazy}> -->
-<!-- <div class:loaded style="position: relative; width: 100%;">
-  <div style="position: relative; overflow: hidden;"> -->
-<!-- <div style="width:100%;padding-bottom:{ratio};" /> -->
-<!-- {#if placeholder}
-      <img class="placeholder {placeholderClass}" {placeholderSrc} {alt} />
-    {/if}
-
-    <Picture {...$$restProps} {blur} {height} {lazy} {loaded} {width} /> -->
-<!-- <picture>
-      <source type="image/webp" srcset={srcsetWebp} {sizes} />
-      <source {srcset} {sizes} />
-      <img
-        {src}
-        use:load
-        class="main {className}"
-        class:blur
-        {alt}
-        {width}
-        {height} />
-    </picture> -->
-<!-- </div>
-</div> -->
-<!-- </Waypoint> -->
+  disabled={!lazy}>
+</Waypoint> -->

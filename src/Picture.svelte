@@ -3,15 +3,15 @@
 
   export let alt
   export let entered
-  export let height
+  export let height = null
   export let loaded
   export let placeholder
   export let sizes
   export let srcset
   export let srcsetWebp
-  export let width
+  export let width = null
 
-  let className
+  let className = ''
   export { className as class }
 
   const dispatch = createEventDispatcher()

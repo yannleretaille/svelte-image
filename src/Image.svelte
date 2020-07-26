@@ -4,25 +4,11 @@
   import Picture from './Picture.svelte'
   import Waypoint from './Waypoint.svelte'
   import Wrapper from './Wrapper.svelte'
+  import Bear from '../../roo/src/components/animals/Bear.svelte'
 
   export let alt = ''
-  export let height = null
   export let lazy = true
-  export let offset
   export let placeholder = true
-  export let placeholderClass = ''
-  export let sizes
-  export let src = ''
-  export let srcset
-  export let srcsetWebp
-  export let width = null
-  export let waypointClass = ''
-  export let wrapperClass = ''
-
-  let className = ''
-  export { className as class }
-
-  export let ratio = !width && '100%'
 
   const dispatch = createEventDispatcher()
 
@@ -42,28 +28,16 @@
   }
 </script>
 
-<Waypoint {offset} {lazy} on:enter={onenter} {waypointClass}>
-  <Wrapper
-    {alt}
-    {loaded}
-    {placeholder}
-    {placeholderClass}
-    {ratio}
-    {src}
-    {wrapperClass}>
-    <Noscript {lazy} {isServer}>
+<Waypoint {...$$restProps} {lazy} on:enter={onenter}>
+  <Wrapper {...$$restProps} {alt} {isServer} {loaded} {placeholder}>
+    <Noscript {isServer} {lazy}>
       <Picture
+        {...$$restProps}
         {alt}
-        class={className}
         {entered}
-        {height}
         {loaded}
         on:load={onload}
-        {placeholder}
-        {sizes}
-        {srcset}
-        {srcsetWebp}
-        {width} />
+        {placeholder} />
     </Noscript>
   </Wrapper>
 </Waypoint>

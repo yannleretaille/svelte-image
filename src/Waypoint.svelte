@@ -4,7 +4,7 @@
 
   export let lazy
   export let offset
-  export let waypointClass
+  export let waypointClass = ''
 
   const dispatch = createEventDispatcher()
 

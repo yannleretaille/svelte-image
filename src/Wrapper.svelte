@@ -1,11 +1,14 @@
 <script>
   export let alt
+  export let isServer
   export let loaded
   export let placeholder
-  export let placeholderClass
-  export let ratio
-  export let src
-  export let wrapperClass
+  export let placeholderClass = ''
+  export let src = ''
+  export let width
+  export let wrapperClass = ''
+
+  export let ratio = !width && '100%'
 
   let classnames = ['wrapper', wrapperClass]
     .filter((classname) => classname)
@@ -47,7 +50,7 @@
     class:loaded
     class:ratio
     style={ratio && `padding-bottom:${ratio};`}>
-    {#if placeholder}
+    {#if placeholder && !isServer}
       <img {alt} class="placeholder {placeholderClass}" {src} />
     {/if}
 

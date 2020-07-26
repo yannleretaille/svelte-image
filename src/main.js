@@ -563,7 +563,8 @@ function replaceOrAddProp({ base, node, previous, prop, value }) {
 
     // calculate diff for replace from previous changes
     const contentDiff = content.length - base.content.length
-    const diff = base.offset + (start > previous.start ? contentDiff : 0)
+    const diff =
+      base.offset + (start + base.offset > previous.start ? contentDiff : 0)
 
     return replaceProp({
       content,

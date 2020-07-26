@@ -6,6 +6,12 @@
   export let ratio
   export let src
   export let wrapperClass
+
+  let classnames = ['wrapper', wrapperClass]
+    .filter((classname) => classname)
+    .join(' ')
+
+  $: wrapperClass
 </script>
 
 <style>
@@ -37,7 +43,7 @@
 
 {#if placeholder || ratio}
   <div
-    class="wrapper {wrapperClass}"
+    class={classnames}
     class:loaded
     class:ratio
     style={ratio && `padding-bottom:${ratio};`}>

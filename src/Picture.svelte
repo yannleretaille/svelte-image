@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let alt
+  export let entered
   export let height
   export let loaded
   export let placeholder

@@ -6,20 +6,20 @@
   import Wrapper from './Wrapper.svelte'
 
   export let alt = ''
-  export let height
+  export let height = null
   export let lazy = true
   export let offset
   export let placeholder = true
-  export let placeholderClass
+  export let placeholderClass = ''
   export let sizes
   export let src = ''
   export let srcset
   export let srcsetWebp
-  export let width
-  export let waypointClass
-  export let wrapperClass
+  export let width = null
+  export let waypointClass = ''
+  export let wrapperClass = ''
 
-  let className
+  let className = ''
   export { className as class }
 
   export let ratio = !width && '100%'
@@ -50,7 +50,6 @@
     {placeholderClass}
     {ratio}
     {src}
-    {width}
     {wrapperClass}>
     <Noscript {lazy} {isServer}>
       <Picture
@@ -60,6 +59,7 @@
         {height}
         {loaded}
         on:load={onload}
+        {placeholder}
         {sizes}
         {srcset}
         {srcsetWebp}

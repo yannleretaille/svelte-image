@@ -1,40 +1,32 @@
 <script>
-  // import Waypoint from 'svelte-waypoint'
-  import LazyNoscript from './LazyNoscript.svelte'
+  import { createEventDispatcher } from 'svelte'
+  import Noscript from './Noscript.svelte'
   import Picture from './Picture.svelte'
+  import Waypoint from './Waypoint.svelte'
   import Wrapper from './Wrapper.svelte'
 
   export let lazy = true
 
-  // export let ratio = '100%'
-  // export let blur = false
-  // export let sizes = '(max-width: 1000px) 100vw, 1000px'
-  // export let threshold = 1.0
-  // export let wrapperClass = ''
-  // export let placeholderClass = ''
-  // export let placeholder = true
+  const dispatch = createEventDispatcher()
 
-  // let className = ''
-  // export { className as class }
+  let entered = !lazy
+  let loaded = entered
 
-  // const sizeString = sizes.map()
+  function onload(e) {
+    loaded = true
+    dispatch('load', e)
+  }
 
-  let loaded = !lazy
-  function load(img) {
-    img.onload = () => (loaded = true)
+  function onenter() {
+    entered = true
+    dispatch('enter')
   }
 </script>
 
-<Wrapper {...$$restProps} {loaded}>
-  <LazyNoscript {lazy}>
-    <Picture {...$$restProps} {load} {loaded} />
-  </LazyNoscript>
-</Wrapper>
-
-<!-- <Waypoint
-  class={wrapperClass}
-  style="min-height: 100px; width: 100%;"
-  once
-  {threshold}
-  disabled={!lazy}>
-</Waypoint> -->
+<Waypoint {...$$restProps} on:enter={onenter} {lazy}>
+  <Wrapper {...$$restProps} {loaded}>
+    <Noscript {lazy}>
+      <Picture {...$$restProps} on:load={onload} {entered} {loaded} />
+    </Noscript>
+  </Wrapper>
+</Waypoint>

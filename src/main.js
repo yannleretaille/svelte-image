@@ -437,6 +437,10 @@ const srcsetLineWebp = (s) =>
     .replace('png', 'webp')
     .replace('jpeg', 'webp')
 
+function createOffset() {
+  return ` offset=\"${options.offset}\" `
+}
+
 function createRatio(sizes) {
   return `${(1 / (sizes[0].width / sizes[0].height)) * 100}%`
 }
@@ -474,7 +478,6 @@ function createSrcset(sizes, lineFn = srcsetLine, tag = 'srcset') {
 
 async function replaceInComponent(edited, node) {
   const { content, offset } = await edited
-
   const { paths, willNotProcess, reason } = await getProcessingPathsForNode(
     node
   )
@@ -493,18 +496,20 @@ async function replaceInComponent(edited, node) {
       ? await getBase64(paths.inPath)
       : await getTrace(paths.inPath))
 
+  const base = { content, offset }
   const [{ start, end }] = getSrc(node)
+
+  // add placeholder as src if using placeholder
   const withBase64 = replaceProp({
     content,
-    end,
-    offset,
-    start,
+    end: end + offset,
+    start: start + offset,
     value: base64 || ''
   })
 
   // add/modify sizes w/ breakpoints and pixel sizes
   const withSizes = replaceOrAddProp({
-    base: edited,
+    base,
     node,
     previous: withBase64,
     prop: 'sizes',
@@ -512,73 +517,84 @@ async function replaceInComponent(edited, node) {
   })
 
   // assumes srcset is never passed, may need to target for replacement
+  // insert srcset
   const withSrcset = addProp({
     ...withSizes,
     value: createSrcset(sizes)
   })
 
-  // if we want to add ratio
+  const withOffset = addProp({
+    ...withSrcset,
+    value: createOffset()
+  })
+
+  // insert ratio if needed and active
   const withRatio = ['', true].includes(getRatioOption(node))
     ? replaceOrAddProp({
-        base: edited,
+        base,
         node,
-        previous: withSrcset,
+        previous: withOffset,
         prop: 'ratio',
         value: createRatio(sizes)
       })
-    : withSrcset
+    : withOffset
 
   if (!options.webp) return withRatio
 
+  // insert webp srcs
   const withWebp = addProp({
     ...withRatio,
     value: createSrcset(sizes, srcsetLineWebp, 'srcsetWebp')
   })
 
-  return withWebp
+  return {
+    ...withWebp,
+    // add current nodes changes to offset
+    offset: offset + withWebp.content.length - base.content.length
+  }
 }
 
 function replaceOrAddProp({ base, node, previous, prop, value }) {
   const { content } = previous
   const propData = getProp(node, prop)
-  const replace = !!propData
 
-  // get end, offset, and start for replacing prop inline
-  const { end, offset, start } = (() => {
-    if (!replace) return {}
+  if (!!propData) {
     const [{ end, start }] = propData
+
+    // calculate diff for replace from previous changes
     const contentDiff = content.length - base.content.length
-    const diff = start > previous.start ? contentDiff : 0
+    const diff = base.offset + (start > previous.start ? contentDiff : 0)
 
-    return {
+    return replaceProp({
+      content,
       end: end + diff,
-      offset: base.offset,
-      start: start + diff
-    }
-  })()
+      node,
+      prop,
+      start: start + diff,
+      value: `\"${value}\"`
+    })
+  }
 
-  return replace
-    ? replaceProp({
-        content,
-        end,
-        node,
-        offset,
-        prop,
-        start,
-        value: `\"${value}\"`
-      })
-    : addProp({
-        ...previous,
-        value: ` ${prop}=\"${value}\" `
-      })
+  return addProp({
+    ...previous,
+    value: ` ${prop}=\"${value}\" `
+  })
 }
 
-function replaceProp({ content, end, offset, start, value }) {
-  return { ...insert(content, value, start, end, offset), end, start }
+function replaceProp({ content, end, start, value }) {
+  return {
+    ...insert(content, value, start, end, 0),
+    end,
+    start
+  }
 }
 
 function addProp({ content, end, offset, start, value }) {
-  return { ...insert(content, value, end + 1, end + 2, offset), end, start }
+  return {
+    ...insert(content, value, end + 1, end + 1, offset),
+    end,
+    start
+  }
 }
 
 async function optimize(paths) {

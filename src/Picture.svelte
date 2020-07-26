@@ -1,7 +1,9 @@
 <script>
+  import { createEventDispatcher } from 'svelte'
+
   export let alt = ''
+  export let entered
   export let height
-  export let load
   export let loaded
   export let placeholder = true
   export let sizes
@@ -11,6 +13,12 @@
 
   let className
   export { className as class }
+
+  const dispatch = createEventDispatcher()
+
+  function onload(e) {
+    dispatch('load', e)
+  }
 </script>
 
 <style>
@@ -25,19 +33,18 @@
   }
 </style>
 
-<!-- todo: could factor in different crops -->
 <picture>
   {#if srcsetWebp}
-    <source {sizes} srcset={srcsetWebp} type="image/webp" />
+    <source {sizes} srcset={entered ? srcsetWebp : null} type="image/webp" />
   {/if}
-  <source {sizes} {srcset} />
+  <source {sizes} srcset={entered ? srcset : null} />
   <img
     {alt}
     class={className}
     class:loaded
     class:placeholder
     {height}
+    on:load={onload}
     src=""
-    use:load
     {width} />
 </picture>

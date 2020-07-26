@@ -4,7 +4,6 @@
   import Picture from './Picture.svelte'
   import Waypoint from './Waypoint.svelte'
   import Wrapper from './Wrapper.svelte'
-  import Bear from '../../roo/src/components/animals/Bear.svelte'
 
   export let alt = ''
   export let lazy = true

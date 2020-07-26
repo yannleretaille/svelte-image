@@ -44,6 +44,7 @@
   }
 </style>
 
+<!-- todo: handle different ratios at different breakpoints -->
 {#if placeholder || ratio}
   <div
     class={classnames}

@@ -4,7 +4,6 @@
 
   export let lazy
   export let offset
-  export let threshold
   export let waypointClass = ''
 
   const dispatch = createEventDispatcher()
@@ -15,7 +14,7 @@
 </script>
 
 {#if lazy}
-  <Waypoint class={waypointClass} {offset} once on:enter={onenter} {threshold}>
+  <Waypoint class={waypointClass} {offset} once on:enter={onenter}>
     <slot />
   </Waypoint>
 {:else}

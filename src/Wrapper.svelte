@@ -1,13 +1,11 @@
 <script>
-  export let alt = ''
+  export let alt
   export let loaded
-  export let placeholder = true
-  export let placeholderClass = ''
-  export let src = ''
-  export let width
-  export let wrapperClass = ''
-
-  export let ratio = !width && '100%'
+  export let placeholder
+  export let placeholderClass
+  export let ratio
+  export let src
+  export let wrapperClass
 </script>
 
 <style>

@@ -5,11 +5,30 @@
   import Waypoint from './Waypoint.svelte'
   import Wrapper from './Wrapper.svelte'
 
+  export let alt = ''
+  export let height
   export let lazy = true
+  export let offset
+  export let placeholder = true
+  export let placeholderClass
+  export let sizes
+  export let src = ''
+  export let srcset
+  export let srcsetWebp
+  export let width
+  export let waypointClass
+  export let wrapperClass
+
+  let className
+  export { className as class }
+
+  export let ratio = !width && '100%'
 
   const dispatch = createEventDispatcher()
 
-  let entered = !lazy
+  // always load srcset's in ssr -> always noscript wrapped or non lazy
+  const isServer = typeof process !== 'undefined'
+  let entered = isServer ? true : !lazy
   let loaded = entered
 
   function onload(e) {
@@ -23,10 +42,28 @@
   }
 </script>
 
-<Waypoint {...$$restProps} on:enter={onenter} {lazy}>
-  <Wrapper {...$$restProps} {loaded}>
-    <Noscript {lazy}>
-      <Picture {...$$restProps} on:load={onload} {entered} {loaded} />
+<Waypoint {offset} {lazy} on:enter={onenter} {waypointClass}>
+  <Wrapper
+    {alt}
+    {loaded}
+    {placeholder}
+    {placeholderClass}
+    {ratio}
+    {src}
+    {width}
+    {wrapperClass}>
+    <Noscript {lazy} {isServer}>
+      <Picture
+        {alt}
+        class={className}
+        {entered}
+        {height}
+        {loaded}
+        on:load={onload}
+        {sizes}
+        {srcset}
+        {srcsetWebp}
+        {width} />
     </Noscript>
   </Wrapper>
 </Waypoint>

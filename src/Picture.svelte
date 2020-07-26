@@ -1,14 +1,13 @@
 <script>
   import { createEventDispatcher } from 'svelte'
 
-  export let alt = ''
-  export let entered
+  export let alt
   export let height
   export let loaded
-  export let placeholder = true
+  export let placeholder
   export let sizes
-  export let srcset = ''
-  export let srcsetWebp = ''
+  export let srcset
+  export let srcsetWebp
   export let width
 
   let className
@@ -35,9 +34,9 @@
 
 <picture>
   {#if srcsetWebp}
-    <source {sizes} srcset={entered ? srcsetWebp : null} type="image/webp" />
+    <source {sizes} srcset={entered ? srcsetWebp : ''} type="image/webp" />
   {/if}
-  <source {sizes} srcset={entered ? srcset : null} />
+  <source {sizes} srcset={entered ? srcset : ''} />
   <img
     {alt}
     class={className}

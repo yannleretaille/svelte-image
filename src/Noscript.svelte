@@ -1,6 +1,6 @@
 <script>
   export let lazy
-  const isServer = typeof process !== 'undefined'
+  export let isServer
 </script>
 
 {#if isServer && lazy}

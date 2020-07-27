@@ -5,7 +5,6 @@
   import Waypoint from './Waypoint.svelte'
   import Wrapper from './Wrapper.svelte'
 
-  export let alt = ''
   export let lazy = true
   export let placeholder = true
 
@@ -28,11 +27,10 @@
 </script>
 
 <Waypoint {...$$restProps} {lazy} on:enter={onenter}>
-  <Wrapper {...$$restProps} {alt} {isServer} {loaded} {placeholder}>
+  <Wrapper {...$$restProps} {isServer} {loaded} {placeholder}>
     <Noscript {isServer} {lazy}>
       <Picture
         {...$$restProps}
-        {alt}
         {entered}
         {loaded}
         on:load={onload}

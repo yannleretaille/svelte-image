@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
 
-  export let alt
+  export let alt = ''
   export let entered
   export let height = null
   export let loaded

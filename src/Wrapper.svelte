@@ -1,5 +1,5 @@
 <script>
-  export let alt
+  export let alt = ''
   export let isServer
   export let loaded
   export let placeholder

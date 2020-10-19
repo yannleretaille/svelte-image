@@ -26,6 +26,10 @@
   "files": [
     "src/index.js",
     "src/Image.svelte",
+    "src/Noscript.svelte",
+    "src/Picture.svelte",
+    "src/Waypoint.svelte",
+    "src/Wrapper.svelte",
     "src/main.js"
   ],
   "homepage": "https://github.com/matyunya/svelte-image#readme",

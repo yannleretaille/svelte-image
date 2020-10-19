@@ -39,7 +39,7 @@
     "sharp": "latest",
     "svelte": "latest",
     "svgo": "^1.2.2",
-    "svelte-waypoint": "latest",
+    "svelte-waypoint": "latest"
   },
   "devDependencies": {
     "@types/inquirer": "^6.5.0",

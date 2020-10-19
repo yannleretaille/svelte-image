@@ -38,7 +38,8 @@
     "potrace": "latest",
     "sharp": "latest",
     "svelte": "latest",
-    "svgo": "^1.2.2"
+    "svgo": "^1.2.2",
+    "svelte-waypoint": "latest",
   },
   "devDependencies": {
     "@types/inquirer": "^6.5.0",
@@ -52,7 +53,6 @@
     "runscript": "^1.4.0",
     "semver": "^6.3.0",
     "simple-git": "^1.124.0",
-    "svelte-waypoint": "latest",
     "ts-node": "^8.3.0",
     "typescript": "^3.6.2"
   }
